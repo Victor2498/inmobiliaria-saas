@@ -6,6 +6,11 @@ import os
 sys.path.append(os.path.join(os.getcwd(), 'backend'))
 
 from app.services.whatsapp import whatsapp_service
+import logging
+
+# Configure logging to see errors
+logging.basicConfig(level=logging.INFO)
+
 
 async def test_send():
     print("--- Test de Envio de WhatsApp (Evolution API) ---")
@@ -26,8 +31,10 @@ async def test_send():
     number = "5493794352784" # forcing the standard format just in case
 
 
-    print(f"Enviando mensaje de prueba a {number}...")
+    print(f"Enviando mensaje de prueba a {number}...", flush=True)
     result = await whatsapp_service.send_text_message(number, "Hola! Esta es una prueba de Inmonea System 🚀")
+    print(f"Result: {result}", flush=True)
+
     
     if result:
         print("✅ Mensaje enviado con exito!")
