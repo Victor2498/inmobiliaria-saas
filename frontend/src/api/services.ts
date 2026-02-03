@@ -1,0 +1,42 @@
+import api from './client';
+
+export interface Contract {
+  id: number;
+  tenant_id: number;
+  property_id: number;
+  current_amount: number;
+  status: string;
+}
+
+export interface DashboardMetrics {
+  activeContracts: number;
+  monthlyIncome: number;
+  pendingPayments: number;
+}
+
+export const ContractService = {
+  getAll: async () => {
+    const response = await api.get<Contract[]>('/contracts/');
+    return response.data;
+  },
+  
+  // Mock function to calculate metrics from raw data (since we don't have a specific metrics endpoint yet)
+  getMetrics: async () => {
+    const contracts = await ContractService.getAll();
+    const activeContracts = contracts.filter(c => c.status === 'active').length;
+    
+    // Sum of current amounts of active contracts
+    const monthlyIncome = contracts
+      .filter(c => c.status === 'active')
+      .reduce((sum, c) => sum + c.current_amount, 0);
+      
+    // TODO: Fetch real pending payments count
+    const pendingPayments = 0; 
+    
+    return {
+      activeContracts,
+      monthlyIncome,
+      pendingPayments
+    };
+  }
+};
