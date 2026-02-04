@@ -8,9 +8,10 @@ class OpenAIService:
     def __init__(self):
         self.api_key = settings.OPENAI_API_KEY
         if not self.api_key:
-            logger.warning("OPENAI_API_KEY is not set. AI features will be disabled.")
+            logger.warning("OPENAI_API_KEY is not set in settings! AI features will be disabled.")
             self.client = None
         else:
+            logger.info("OpenAI client initialized with API key.")
             self.client = AsyncOpenAI(api_key=self.api_key)
 
     async def generate_response(self, user_message: str, context: str = "") -> str:

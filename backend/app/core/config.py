@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     EVOLUTION_API_TOKEN: str
     INSTANCE_NAME: str = "Inmonea"
 
+    # OpenAI
+    OPENAI_API_KEY: str = None
+
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 
 settings = Settings()
