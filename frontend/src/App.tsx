@@ -235,6 +235,7 @@ function PropertiesPage({ isDarkMode }: { isDarkMode: boolean }) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   const fetchProperties = async () => {
     try {
@@ -311,11 +312,24 @@ function PropertiesPage({ isDarkMode }: { isDarkMode: boolean }) {
               )}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <span className="text-xs text-slate-400">Propietario: {prop.owner_name}</span>
-                <button className="text-brand-500 text-sm font-medium hover:underline">Ver detalles</button>
+                <button
+                  onClick={() => setSelectedProperty(prop)}
+                  className="text-brand-500 text-sm font-medium hover:underline"
+                >
+                  Ver detalles
+                </button>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {selectedProperty && (
+        <PropertyDetailsModal
+          property={selectedProperty}
+          isDarkMode={isDarkMode}
+          onClose={() => setSelectedProperty(null)}
+        />
       )}
 
       {isModalOpen && (
@@ -520,6 +534,74 @@ function TenantModal({ isDarkMode, onClose, onSubmit }: any) {
     </div>
   );
 }
+
+function PropertyDetailsModal({ property, isDarkMode, onClose }: { property: Property, isDarkMode: boolean, onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+      <div className={`w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-gray-900'}`}>
+        {property.image_url ? (
+          <div className="w-full h-64 bg-slate-200 dark:bg-slate-800">
+            <img
+              src={property.image_url}
+              alt={property.address}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-full h-48 bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+            <Home size={64} />
+          </div>
+        )}
+
+        <div className="p-8">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase mb-2 inline-block ${property.status === 'available' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'
+                }`}>
+                {property.status === 'available' ? 'Disponible' : property.status === 'rented' ? 'Alquilada' : 'Vendida'}
+              </span>
+              <h3 className="text-3xl font-bold">{property.address}</h3>
+              <p className="opacity-60">{property.city} • {
+                property.type === 'apartment' ? 'Departamento' : property.type === 'house' ? 'Casa' : 'Local'
+              }</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm opacity-60">Precio</p>
+              <p className="text-3xl font-bold text-brand-500">${property.price?.toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div className={`grid grid-cols-2 gap-6 p-6 rounded-2xl mb-8 ${isDarkMode ? 'bg-slate-800' : 'bg-gray-50'}`}>
+            <div>
+              <p className="text-xs uppercase tracking-wider opacity-50 font-bold mb-1">Propietario</p>
+              <p className="font-semibold">{property.owner_name}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider opacity-50 font-bold mb-1">ID Propiedad</p>
+              <p className="font-semibold">#{property.id}</p>
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <button
+              onClick={onClose}
+              className={`flex-1 px-6 py-4 rounded-2xl font-bold transition-all ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+            >
+              Cerrar
+            </button>
+            <button
+              className="flex-1 bg-brand-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-xl shadow-brand-500/30"
+            >
+              Gestionar Contratos
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function StatCard({ title, value, trend, isNegative, isDarkMode }: any) {
   return (
