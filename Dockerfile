@@ -21,6 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY backend/ ./backend/
+COPY alembic.ini .
 
 # Copy built frontend assets
 COPY --from=build-frontend /app/frontend/dist ./frontend/dist
