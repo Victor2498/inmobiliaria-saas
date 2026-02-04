@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
 from app.services.whatsapp import whatsapp_service
+from app.db.session import get_session
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import select
+from app.models.base_entities import Property
 import logging
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 @router.post("/webhook")
-async def whatsapp_webhook(request: Request):
+async def whatsapp_webhook(request: Request, session: AsyncSession = Depends(get_session)):
     """
     Receives webhook events from Evolution API.
     """
@@ -21,11 +25,9 @@ async def whatsapp_webhook(request: Request):
         if event_type == 'messages.upsert':
             messages = data.get('messages', [])
             if not messages:
-                # Fallback to direct data if it's a legacy or single message payload
                 messages = [data] if data.get('key') else []
 
             for message in messages:
-                # Avoid processing our own messages
                 if message.get('key', {}).get('fromMe'):
                     continue
 
@@ -33,7 +35,6 @@ async def whatsapp_webhook(request: Request):
                 if not remote_jid or '@s.whatsapp.net' not in remote_jid:
                     continue
 
-                # Extract content from different possible locations
                 msg_body = message.get('message', {})
                 content = (
                     msg_body.get('conversation') or 
@@ -45,13 +46,22 @@ async def whatsapp_webhook(request: Request):
                     sender_name = message.get('pushName', 'Usuario')
                     phone_number = remote_jid.split('@')[0]
                     
-                    print(f"DEBUG: Processing message from {sender_name} ({phone_number}): {content}")
+                    # 1. Fetch available properties to give context to AI
+                    result = await session.execute(select(Property).where(Property.status == "available"))
+                    properties = result.scalars().all()
                     
-                    # 1. Process with OpenAI
+                    prop_context = "Propiedades disponibles:\n"
+                    for p in properties:
+                        prop_context += f"- {p.address} ({p.city}): {p.type}, ${p.price}\n"
+                    
+                    # 2. Process with OpenAI
                     from app.services.openai_service import openai_service
-                    ai_response = await openai_service.generate_response(content, context=f"Usuario: {sender_name}")
+                    ai_response = await openai_service.generate_response(
+                        content, 
+                        context=f"Usuario: {sender_name}\n\n{prop_context}"
+                    )
                     
-                    # 2. Send response back
+                    # 3. Send response back
                     if ai_response:
                         await whatsapp_service.send_text_message(phone_number, ai_response)
 
@@ -59,6 +69,4 @@ async def whatsapp_webhook(request: Request):
 
     except Exception as e:
         logger.error(f"Error processing webhook: {e}")
-        import traceback
-        traceback.print_exc()
         return {"status": "error", "reason": str(e)}
