@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Home, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ContractService } from './api/services';
@@ -18,13 +18,13 @@ function App() {
           </div>
 
           <nav className="flex-1 px-4 space-y-2 mt-4">
-            <NavItem icon={<LayoutDashboard size={20} />} text="Dashboard" active />
-            <NavItem icon={<Users size={20} />} text="Inquilinos" />
-            <NavItem icon={<Home size={20} />} text="Propiedades" />
+            <NavItem to="/" icon={<LayoutDashboard size={20} />} text="Dashboard" />
+            <NavItem to="/inquilinos" icon={<Users size={20} />} text="Inquilinos" />
+            <NavItem to="/propiedades" icon={<Home size={20} />} text="Propiedades" />
           </nav>
 
           <div className="p-4 border-t border-slate-800">
-            <NavItem icon={<Settings size={20} />} text="Configuración" />
+            <NavItem to="/configuracion" icon={<Settings size={20} />} text="Configuración" />
           </div>
         </aside>
 
@@ -42,6 +42,9 @@ function App() {
           <div className="p-8">
             <Routes>
               <Route path="/" element={<DashboardHome />} />
+              <Route path="/inquilinos" element={<TenantsPage />} />
+              <Route path="/propiedades" element={<PropertiesPage />} />
+              <Route path="/configuracion" element={<div className="p-8 text-gray-500">Página de Configuración (Próximamente)</div>} />
             </Routes>
           </div>
         </main>
@@ -50,17 +53,18 @@ function App() {
   );
 }
 
-function NavItem({ icon, text, active = false }: { icon: any, text: string, active?: boolean }) {
+function NavItem({ to, icon, text }: { to: string, icon: any, text: string }) {
+  const location = useLocation();
+  const active = location.pathname === to;
+
   return (
-    <a href="#" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 
+    <Link to={to} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 
       ${active ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
       {icon}
       <span className="font-medium">{text}</span>
-    </a>
+    </Link>
   )
 }
-
-
 
 function DashboardHome() {
   const [metrics, setMetrics] = useState<DashboardMetrics>({
@@ -109,6 +113,38 @@ function DashboardHome() {
       />
     </div>
   )
+}
+
+function TenantsPage() {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-2xl font-bold text-gray-900">Gestión de Inquilinos</h3>
+        <button className="bg-brand-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+          + Nuevo Inquilino
+        </button>
+      </div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
+        No hay inquilinos registrados actualmente.
+      </div>
+    </div>
+  );
+}
+
+function PropertiesPage() {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-2xl font-bold text-gray-900">Catálogo de Propiedades</h3>
+        <button className="bg-brand-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+          + Nueva Propiedad
+        </button>
+      </div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-500">
+        No hay propiedades listadas en el sistema.
+      </div>
+    </div>
+  );
 }
 
 function StatCard({ title, value, trend, isNegative }: any) {
