@@ -35,7 +35,6 @@ deprecation==2.1.0
 distro==1.9.0
 django-payments==3.1.0
 django-phonenumber-field==8.1.0
-django-rest-framework==0.1.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 dnspython==2.8.0
@@ -46,7 +45,6 @@ fastapi==0.115.0
 flask-cors==6.0.1
 fonttools==4.59.2
 fpdf2==2.8.4
-fpdf==1.7.2
 greenlet==3.2.4
 h11==0.14.0
 h2==4.3.0
@@ -74,7 +72,6 @@ phonenumberslite==9.0.12
 pillow==11.3.0
 postgrest>=1.0.0
 psycopg2-binary==2.9.10
-psycopg2==2.9.10
 pyasn1==0.6.1
 pycparser==2.22
 pydantic-settings==2.12.0
