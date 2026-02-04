@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     INSTANCE_NAME: str = "Inmonea"
 
     # OpenAI
-    OPENAI_API_KEY: str = None
+    OPENAI_API_KEY: Optional[str] = None
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 
