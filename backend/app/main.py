@@ -7,6 +7,24 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+@app.on_event("startup")
+async def seed_data():
+    from app.db.session import engine
+    from app.models.base_entities import Agency
+    from sqlmodel import select
+    from sqlmodel.ext.asyncio.session import AsyncSession
+    from sqlalchemy.orm import sessionmaker
+    
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
+        # Check if any agency exists
+        result = await session.execute(select(Agency))
+        if not result.first():
+            agency = Agency(id=1, name="Inmobiliaria Inmonea")
+            session.add(agency)
+            await session.commit()
+            print("Auto-seeded default agency ID 1")
+
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
